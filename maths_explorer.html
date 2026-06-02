@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculus Explorer — Economics Edition</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1f2435;
+    --accent1: #4f9cf9;
+    --accent2: #f97b4f;
+    --accent3: #6bd96b;
+    --accent4: #c97bf9;
+    --text: #e8eaf0;
+    --text-dim: #8b90a0;
+    --border: #2a2f42;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, #0f1117 0%, #1a1f35 50%, #0f1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent1), var(--accent4));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  header p {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-top: 3px;
+  }
+
+  .mode-tabs {
+    display: flex;
+    gap: 8px;
+  }
+
+  .mode-tab {
+    padding: 8px 18px;
+    border-radius: 50px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .mode-tab.active {
+    background: var(--accent1);
+    border-color: var(--accent1);
+    color: white;
+    font-weight: 500;
+  }
+
+  .mode-tab:hover:not(.active) {
+    border-color: var(--accent1);
+    color: var(--accent1);
+  }
+
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 40px;
+  }
+
+  /* MODE PANELS */
+  .mode-panel { display: none; }
+  .mode-panel.active { display: block; }
+
+  /* EXPLORE MODE */
+  .explore-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .sidebar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    position: sticky;
+    top: 100px;
+  }
+
+  .sidebar h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .input-group {
+    margin-bottom: 20px;
+  }
+
+  .input-group label {
+    display: block;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .input-group input, .input-group select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .input-group input:focus, .input-group select:focus {
+    border-color: var(--accent1);
+  }
+
+  .input-group select option {
+    background: var(--surface2);
+  }
+
+  .hint {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--accent1), var(--accent4));
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-top: 4px;
+  }
+
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .preset-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .preset-btn {
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+  }
+
+  .preset-btn:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  .plots-area {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .plot-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .plot-card-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .plot-badge {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .plot-card-header h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  .plot-card-header .formula {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    background: var(--surface2);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: monospace;
+  }
+
+  .plot-container {
+    padding: 16px;
+  }
+
+  /* QUESTIONS PANEL */
+  .questions-panel {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    padding: 20px 24px;
+  }
+
+  .questions-panel h4 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent2);
+    margin-bottom: 14px;
+  }
+
+  .question-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+  }
+
+  .q-number {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent2);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .question-item p {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* ECONOMICS MODE */
+  .econ-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .econ-tab {
+    flex: 1;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+
+  .econ-tab.active {
+    border-color: var(--accent3);
+    background: rgba(107, 217, 107, 0.05);
+  }
+
+  .econ-tab:hover:not(.active) {
+    border-color: var(--border);
+    background: var(--surface2);
+  }
+
+  .econ-tab h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .econ-tab p {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  .econ-tab .econ-formula {
+    font-size: 0.85rem;
+    color: var(--accent3);
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    margin-top: 8px;
+  }
+
+  .econ-content { display: none; }
+  .econ-content.active { display: block; }
+
+  .econ-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .econ-info {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .econ-info h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+    color: var(--accent3);
+  }
+
+  .econ-info p {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  .econ-info .formula-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    text-align: center;
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--accent3);
+  }
+
+  .param-slider {
+    margin: 12px 0;
+  }
+
+  .param-slider label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  .param-slider label span {
+    color: var(--accent1);
+    font-weight: 500;
+  }
+
+  .param-slider input[type=range] {
+    width: 100%;
+    accent-color: var(--accent1);
+  }
+
+  .interpretation-box {
+    background: rgba(79, 156, 249, 0.08);
+    border: 1px solid rgba(79, 156, 249, 0.2);
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 16px;
+  }
+
+  .interpretation-box h5 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent1);
+    margin-bottom: 8px;
+  }
+
+  .interpretation-box p {
+    font-size: 0.83rem;
+    color: var(--text);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ERROR */
+  .error-msg {
+    color: #f97b4f;
+    font-size: 0.82rem;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(249, 123, 79, 0.1);
+    border-radius: 6px;
+    display: none;
+  }
+
+  /* CONCEPT MODE */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .concept-card:hover, .concept-card.active {
+    border-color: var(--accent4);
+    background: rgba(201, 123, 249, 0.05);
+  }
+
+  .concept-card .icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+
+  .concept-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  .concept-card p {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .concept-detail {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    display: none;
+  }
+
+  .concept-detail.active { display: block; }
+
+  .concept-detail h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+    color: var(--accent4);
+  }
+
+  .concept-detail .explainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 20px;
+  }
+
+  .explainer-text p {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  .step-list {
+    list-style: none;
+    counter-reset: steps;
+  }
+
+  .step-list li {
+    counter-increment: steps;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .step-list li::before {
+    content: counter(steps);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--accent4);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 900px) {
+    .explore-layout { grid-template-columns: 1fr; }
+    .econ-layout { grid-template-columns: 1fr; }
+    .concept-grid { grid-template-columns: 1fr; }
+    main { padding: 20px; }
+    header { padding: 20px; flex-direction: column; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Calculus Explorer</h1>
+    <p>Interactive visualisation for introductory mathematics &amp; economics</p>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="switchMode('explore')">Free Explore</button>
+    <button class="mode-tab" onclick="switchMode('economics')">Economics</button>
+    <button class="mode-tab" onclick="switchMode('concepts')">Learn</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- FREE EXPLORE MODE -->
+  <div id="mode-explore" class="mode-panel active">
+    <div class="explore-layout">
+      <div class="sidebar">
+        <h2>Enter a Function</h2>
+        <div class="input-group">
+          <label>Function f(x, y)</label>
+          <input type="text" id="funcInput" value="x^2 + y^2" placeholder="e.g. x^2 + y^2">
+          <div class="hint">Use x and y as variables. Try: sin(x)*cos(y), x^2 - y^2, x*y</div>
+          <div class="error-msg" id="funcError">Invalid function — please check your expression</div>
+        </div>
+
+        <div class="input-group">
+          <label>Point of interest</label>
+          <input type="number" id="ptX" value="1" step="0.5" placeholder="x₀">
+          <input type="number" id="ptY" value="1" step="0.5" placeholder="y₀" style="margin-top:8px">
+          <div class="hint">The partial derivatives will be evaluated at this point</div>
+        </div>
+
+        <button class="btn-primary" onclick="plotAll()">Plot Function</button>
+
+        <div style="margin-top: 24px;">
+          <label style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); display:block; margin-bottom:10px;">Quick Examples</label>
+          <div class="preset-buttons">
+            <button class="preset-btn" onclick="setPreset('x^2 + y^2')">Paraboloid: x² + y²</button>
+            <button class="preset-btn" onclick="setPreset('x^2 - y^2')">Saddle: x² − y²</button>
+            <button class="preset-btn" onclick="setPreset('sin(x) * cos(y)')">Waves: sin(x)·cos(y)</button>
+            <button class="preset-btn" onclick="setPreset('sqrt(abs(x*y))')">√|xy|</button>
+            <button class="preset-btn" onclick="setPreset('exp(-(x^2+y^2)/4)')">Bell curve</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="plots-area">
+
+        <!-- 3D Surface -->
+        <div class="plot-card">
+          <div class="plot-card-header">
+            <div class="plot-badge" style="background: var(--accent1)"></div>
+            <h3>3D Surface — f(x, y)</h3>
+            <span class="formula" id="label3d">x² + y²</span>
+          </div>
+          <div class="plot-container">
+            <div id="plot3d" style="height:380px;"></div>
+          </div>
+          <div class="questions-panel">
+            <h4>Think about it</h4>
+            <div class="question-item">
+              <div class="q-number">1</div>
+              <p>Look at the surface and identify the lowest or highest point. What does this point represent mathematically?</p>
+            </div>
+            <div class="question-item">
+              <div class="q-number">2</div>
+              <p>If you were standing on this surface, in which direction would you walk to go uphill most steeply?</p>
+            </div>
+            <div class="question-item">
+              <div class="q-number">3</div>
+              <p>Try changing the function. How does the shape change? Can you make a saddle shape?</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Partial Derivatives -->
+        <div class="plot-card">
+          <div class="plot-card-header">
+            <div class="plot-badge" style="background: var(--accent2)"></div>
+            <h3>Partial Derivatives — 2D Slices</h3>
+            <span class="formula" id="labelPartial">∂f/∂x and ∂f/∂y</span>
+          </div>
+          <div class="plot-container" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div>
+              <p style="font-size:0.78rem; color:var(--text-dim); margin-bottom:8px; text-align:center;">Slice at y = y₀ (varying x)</p>
+              <div id="plotSliceX" style="height:260px;"></div>
+            </div>
+            <div>
+              <p style="font-size:0.78rem; color:var(--text-dim); margin-bottom:8px; text-align:center;">Slice at x = x₀ (varying y)</p>
+              <div id="plotSliceY" style="height:260px;"></div>
+            </div>
+          </div>
+          <div class="questions-panel">
+            <h4>Think about it</h4>
+            <div class="question-item">
+              <div class="q-number">1</div>
+              <p>The orange dot marks your chosen point. What is the slope of the curve there? Is it positive or negative?</p>
+            </div>
+            <div class="question-item">
+              <div class="q-number">2</div>
+              <p>The partial derivative ∂f/∂x tells us how f changes as x increases, holding y fixed. Where is this slope zero?</p>
+            </div>
+            <div class="question-item">
+              <div class="q-number">3</div>
+              <p>Compare the two slices. Is the function steeper in the x-direction or the y-direction at your chosen point?</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Differential -->
+        <div class="plot-card">
+          <div class="plot-card-header">
+            <div class="plot-badge" style="background: var(--accent3)"></div>
+            <h3>Differential — Tangent Plane at (x₀, y₀)</h3>
+            <span class="formula" id="labelDiff">df ≈ (∂f/∂x)dx + (∂f/∂y)dy</span>
+          </div>
+          <div class="plot-container">
+            <div id="plotDiff" style="height:380px;"></div>
+          </div>
+          <div id="diffInfo" style="padding: 0 24px 16px; font-size:0.85rem; color:var(--text-dim);"></div>
+          <div class="questions-panel">
+            <h4>Think about it</h4>
+            <div class="question-item">
+              <div class="q-number">1</div>
+              <p>The flat plane is the tangent plane at your chosen point. How well does it approximate the surface nearby? Far away?</p>
+            </div>
+            <div class="question-item">
+              <div class="q-number">2</div>
+              <p>The differential df tells us the approximate change in f for small steps dx and dy. When is this approximation most accurate?</p>
+            </div>
+            <div class="question-item">
+              <div class="q-number">3</div>
+              <p>Move the point of interest closer to a flat region of the surface. Does the tangent plane fit better or worse?</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ECONOMICS MODE -->
+  <div id="mode-economics" class="mode-panel">
+
+    <div class="econ-tabs">
+      <div class="econ-tab active" onclick="switchEcon('utility')">
+        <h3>Utility Function</h3>
+        <p>Consumer preferences over two goods</p>
+        <div class="econ-formula">U(x, y) = x^α · y^(1−α)</div>
+      </div>
+      <div class="econ-tab" onclick="switchEcon('production')">
+        <h3>Production Function</h3>
+        <p>Output from capital and labour inputs</p>
+        <div class="econ-formula">Q(K, L) = K^α · L^(1−α)</div>
+      </div>
+    </div>
+
+    <!-- UTILITY -->
+    <div id="econ-utility" class="econ-content active">
+      <div class="econ-layout">
+        <div class="econ-info">
+          <h3>Utility Function U(x, y)</h3>
+          <p>A utility function represents a consumer's preferences over two goods, x and y. The Cobb-Douglas form is one of the most widely used in economics.</p>
+          <div class="formula-box">U(x, y) = x<sup>α</sup> · y<sup>(1−α)</sup></div>
+          <p>The partial derivatives tell us the <strong style="color:var(--text)">marginal utility</strong> — how much additional satisfaction a consumer gets from one more unit of each good.</p>
+
+          <div class="param-slider">
+            <label>Parameter α (share of good x) <span id="alphaVal">0.5</span></label>
+            <input type="range" min="0.1" max="0.9" step="0.1" value="0.5" oninput="updateAlpha(this.value)">
+          </div>
+
+          <div class="param-slider">
+            <label>Evaluate at x₀ <span id="ux0Val">2</span></label>
+            <input type="range" min="0.5" max="5" step="0.5" value="2" oninput="updateUPoint('x', this.value)">
+          </div>
+
+          <div class="param-slider">
+            <label>Evaluate at y₀ <span id="uy0Val">2</span></label>
+            <input type="range" min="0.5" max="5" step="0.5" value="2" oninput="updateUPoint('y', this.value)">
+          </div>
+
+          <div class="interpretation-box">
+            <h5>Economic Interpretation at this point</h5>
+            <p id="utilityInterp">Loading...</p>
+          </div>
+
+          <div style="margin-top:20px;">
+            <h4 style="font-size:0.9rem; margin-bottom:12px; color:var(--text)">Think about it</h4>
+            <div class="question-item">
+              <div class="q-number" style="background:var(--accent3)">1</div>
+              <p>What happens to the 3D surface when α increases toward 1? What does this mean economically?</p>
+            </div>
+            <div class="question-item">
+              <div class="q-number" style="background:var(--accent3)">2</div>
+              <p>The marginal utility of x is ∂U/∂x. As x increases (holding y fixed), does marginal utility rise or fall? Why?</p>
+            </div>
+            <div class="question-item">
+              <div class="q-number" style="background:var(--accent3)">3</div>
+              <p>The tangent plane approximates the utility surface. What does a steeper tangent plane tell us about consumer preferences?</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div id="plotUtility3d" style="height:340px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px;"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div>
+              <p style="font-size:0.75rem; color:var(--text-dim); text-align:center; margin-bottom:6px;">MU of Good x = ∂U/∂x</p>
+              <div id="plotUtilityMUx" style="height:220px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);"></div>
+            </div>
+            <div>
+              <p style="font-size:0.75rem; color:var(--text-dim); text-align:center; margin-bottom:6px;">MU of Good y = ∂U/∂y</p>
+              <div id="plotUtilityMUy" style="height:220px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTION -->
+    <div id="econ-production" class="econ-content">
+      <div class="econ-layout">
+        <div class="econ-info">
+          <h3>Production Function Q(K, L)</h3>
+          <p>A Cobb-Douglas production function describes how capital (K) and labour (L) combine to produce output (Q).</p>
+          <div class="formula-box">Q(K, L) = K<sup>α</sup> · L<sup>(1−α)</sup></div>
+          <p>The partial derivatives give us <strong style="color:var(--text)">marginal products</strong> — the additional output from one more unit of capital or labour.</p>
+
+          <div class="param-slider">
+            <label>Capital share α <span id="prodAlphaVal">0.3</span></label>
+            <input type="range" min="0.1" max="0.9" step="0.1" value="0.3" oninput="updateProdAlpha(this.value)">
+          </div>
+
+          <div class="param-slider">
+            <label>Evaluate at K₀ <span id="pk0Val">2</span></label>
+            <input type="range" min="0.5" max="5" step="0.5" value="2" oninput="updatePPoint('k', this.value)">
+          </div>
+
+          <div class="param-slider">
+            <label>Evaluate at L₀ <span id="pl0Val">2</span></label>
+            <input type="range" min="0.5" max="5" step="0.5" value="2" oninput="updatePPoint('l', this.value)">
+          </div>
+
+          <div class="interpretation-box">
+            <h5>Economic Interpretation at this point</h5>
+            <p id="prodInterp">Loading...</p>
+          </div>
+
+          <div style="margin-top:20px;">
+            <h4 style="font-size:0.9rem; margin-bottom:12px; color:var(--text)">Think about it</h4>
+            <div class="question-item">
+              <div class="q-number" style="background:var(--accent3)">1</div>
+              <p>What does it mean if the marginal product of labour is decreasing? Is this realistic?</p>
+            </div>
+            <div class="question-item">
+              <div class="q-number" style="background:var(--accent3)">2</div>
+              <p>What happens to output if both K and L double? This is called returns to scale — can you see it in the graph?</p>
+            </div>
+            <div class="question-item">
+              <div class="q-number" style="background:var(--accent3)">3</div>
+              <p>Increase the capital share α. How does the shape of the production surface change? What does this imply?</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div id="plotProd3d" style="height:340px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px;"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div>
+              <p style="font-size:0.75rem; color:var(--text-dim); text-align:center; margin-bottom:6px;">Marginal Product of Capital = ∂Q/∂K</p>
+              <div id="plotProdMPK" style="height:220px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);"></div>
+            </div>
+            <div>
+              <p style="font-size:0.75rem; color:var(--text-dim); text-align:center; margin-bottom:6px;">Marginal Product of Labour = ∂Q/∂L</p>
+              <div id="plotProdMPL" style="height:220px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEARN / CONCEPTS MODE -->
+  <div id="mode-concepts" class="mode-panel">
+    <div class="concept-grid">
+      <div class="concept-card active" onclick="showConcept('derivative')">
+        <div class="icon">📈</div>
+        <h3>Derivatives</h3>
+        <p>The rate of change of a function at a single point. The slope of the tangent line.</p>
+      </div>
+      <div class="concept-card" onclick="showConcept('partial')">
+        <div class="icon">🔀</div>
+        <h3>Partial Derivatives</h3>
+        <p>How a function of multiple variables changes when only one variable moves.</p>
+      </div>
+      <div class="concept-card" onclick="showConcept('differential')">
+        <div class="icon">➡️</div>
+        <h3>Differentials</h3>
+        <p>A linear approximation of how much a function changes for small steps in any direction.</p>
+      </div>
+    </div>
+
+    <div id="concept-derivative" class="concept-detail active">
+      <h2>What is a Derivative?</h2>
+      <div class="explainer">
+        <div class="explainer-text">
+          <p>A derivative measures <strong style="color:var(--text)">how fast a function changes</strong> at a particular point. Imagine you are driving — the derivative is your speedometer reading right now, not your average speed for the whole journey.</p>
+          <p>Formally, the derivative of f(x) at a point x₀ is the slope of the tangent line to the curve at that point:</p>
+          <div style="background:var(--surface2); border-radius:8px; padding:16px; margin:16px 0; text-align:center; font-family:'DM Serif Display',serif; font-style:italic; font-size:1.1rem; color:var(--accent4);">
+            f'(x) = lim[Δx→0] (f(x+Δx) − f(x)) / Δx
+          </div>
+          <p>In economics, derivatives are everywhere: marginal cost, marginal revenue, marginal utility — all are derivatives.</p>
+          <ul class="step-list" style="margin-top:16px;">
+            <li>Go to the Free Explore tab and enter a function like x²</li>
+            <li>Look at the 2D slice — this shows the function as a curve</li>
+            <li>The slope of the curve at any point is the derivative</li>
+            <li>Try moving the point of interest along the curve — watch the slope change</li>
+          </ul>
+        </div>
+        <div id="conceptDerivativePlot" style="height:320px; background:var(--surface2); border-radius:var(--radius);"></div>
+      </div>
+    </div>
+
+    <div id="concept-partial" class="concept-detail">
+      <h2>What is a Partial Derivative?</h2>
+      <div class="explainer">
+        <div class="explainer-text">
+          <p>When a function depends on <strong style="color:var(--text)">more than one variable</strong>, a partial derivative measures how the function changes when only one variable changes, holding all others constant.</p>
+          <p>Think of hiking on a 3D landscape. The partial derivative ∂f/∂x tells you how steep the hill is if you walk east. The partial derivative ∂f/∂y tells you how steep it is if you walk north.</p>
+          <div style="background:var(--surface2); border-radius:8px; padding:16px; margin:16px 0; text-align:center; font-family:'DM Serif Display',serif; font-style:italic; font-size:1.1rem; color:var(--accent4);">
+            ∂f/∂x = rate of change of f as x changes, y held fixed
+          </div>
+          <p>In economics: marginal utility of good x = ∂U/∂x (how much happier you get from one more unit of x, holding consumption of y constant).</p>
+          <ul class="step-list" style="margin-top:16px;">
+            <li>Go to Economics tab and open the Utility Function</li>
+            <li>The two lower graphs show ∂U/∂x and ∂U/∂y</li>
+            <li>Notice each is a 2D curve — a slice through the 3D surface</li>
+            <li>Move the sliders and see how the slopes change</li>
+          </ul>
+        </div>
+        <div id="conceptPartialPlot" style="height:320px; background:var(--surface2); border-radius:var(--radius);"></div>
+      </div>
+    </div>
+
+    <div id="concept-differential" class="concept-detail">
+      <h2>What is a Differential?</h2>
+      <div class="explainer">
+        <div class="explainer-text">
+          <p>The differential is a <strong style="color:var(--text)">linear approximation</strong> of how much a function changes when you move a small amount in any direction. Instead of the curved surface, you use the flat tangent plane as your approximation.</p>
+          <div style="background:var(--surface2); border-radius:8px; padding:16px; margin:16px 0; text-align:center; font-family:'DM Serif Display',serif; font-style:italic; font-size:1.1rem; color:var(--accent4);">
+            df ≈ (∂f/∂x)·dx + (∂f/∂y)·dy
+          </div>
+          <p>In economics: if the price of good x rises by £0.10 (dx = 0.10) and good y by £0.20 (dy = 0.20), the differential tells us approximately how much total utility changes.</p>
+          <ul class="step-list" style="margin-top:16px;">
+            <li>Go to Free Explore and plot any function</li>
+            <li>The third graph shows the tangent plane at your chosen point</li>
+            <li>The flat plane is the differential approximation</li>
+            <li>Notice how the plane fits the surface well near the point, but poorly far away</li>
+          </ul>
+        </div>
+        <div id="conceptDiffPlot" style="height:320px; background:var(--surface2); border-radius:var(--radius);"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ─── GLOBAL STATE ──────────────────────────────────────────────
+const state = {
+  func: 'x^2 + y^2',
+  x0: 1, y0: 1,
+  utilAlpha: 0.5, ux0: 2, uy0: 2,
+  prodAlpha: 0.3, pk0: 2, pl0: 2
+};
+
+const PLOTLY_LAYOUT_BASE = {
+  paper_bgcolor: 'rgba(0,0,0,0)',
+  plot_bgcolor: 'rgba(0,0,0,0)',
+  font: { color: '#8b90a0', family: 'DM Sans, sans-serif', size: 11 },
+  margin: { t: 10, b: 40, l: 50, r: 20 },
+};
+
+const PLOTLY_3D_BASE = {
+  paper_bgcolor: 'rgba(0,0,0,0)',
+  scene: {
+    bgcolor: 'rgba(0,0,0,0)',
+    xaxis: { gridcolor: '#2a2f42', zerolinecolor: '#2a2f42', color: '#8b90a0' },
+    yaxis: { gridcolor: '#2a2f42', zerolinecolor: '#2a2f42', color: '#8b90a0' },
+    zaxis: { gridcolor: '#2a2f42', zerolinecolor: '#2a2f42', color: '#8b90a0' },
+  },
+  font: { color: '#8b90a0', family: 'DM Sans, sans-serif', size: 11 },
+  margin: { t: 10, b: 10, l: 10, r: 10 },
+};
+
+const PLOTLY_CONFIG = { displayModeBar: false, responsive: true };
+
+// ─── GRID HELPERS ─────────────────────────────────────────────
+function linspace(a, b, n) {
+  const arr = [];
+  for (let i = 0; i < n; i++) arr.push(a + (b - a) * i / (n - 1));
+  return arr;
+}
+
+function evalGrid(expr, xs, ys) {
+  const z = [];
+  for (let j = 0; j < ys.length; j++) {
+    const row = [];
+    for (let i = 0; i < xs.length; i++) {
+      try { row.push(math.evaluate(expr, { x: xs[i], y: ys[j] })); }
+      catch { row.push(null); }
+    }
+    z.push(row);
+  }
+  return z;
+}
+
+function numericalPartial(expr, varName, x0, y0, h = 0.001) {
+  const p = varName === 'x' ? { x: x0 + h, y: y0 } : { x: x0, y: y0 + h };
+  const m = varName === 'x' ? { x: x0 - h, y: y0 } : { x: x0, y: y0 - h };
+  try {
+    return (math.evaluate(expr, p) - math.evaluate(expr, m)) / (2 * h);
+  } catch { return 0; }
+}
+
+// ─── SURFACE PLOT ──────────────────────────────────────────────
+function plotSurface(divId, expr, x0, y0, opts = {}) {
+  const xs = linspace(-3, 3, 40);
+  const ys = linspace(-3, 3, 40);
+  const z = evalGrid(expr, xs, ys);
+
+  const surface = {
+    type: 'surface', x: xs, y: ys, z,
+    colorscale: opts.colorscale || [
+      [0, '#4f9cf9'], [0.25, '#c97bf9'], [0.5, '#f97b4f'],
+      [0.75, '#f9c74f'], [1, '#6bd96b']
+    ],
+    opacity: 0.85,
+    showscale: false,
+    contours: { z: { show: true, usecolormap: true, highlightcolor: "#42f462", project: { z: true } } }
+  };
+
+  const data = [surface];
+
+  if (opts.showTangent !== false) {
+    const f0 = math.evaluate(expr, { x: x0, y: y0 });
+    const fx = numericalPartial(expr, 'x', x0, y0);
+    const fy = numericalPartial(expr, 'y', x0, y0);
+    const dx = 1.5, dy = 1.5;
+    const txs = [x0 - dx, x0 + dx, x0 + dx, x0 - dx];
+    const tys = [y0 - dy, y0 - dy, y0 + dy, y0 + dy];
+    const tzs = txs.map((xi, i) => f0 + fx * (xi - x0) + fy * (tys[i] - y0));
+    data.push({
+      type: 'mesh3d', x: txs, y: tys, z: tzs,
+      i: [0, 0], j: [1, 2], k: [2, 3],
+      color: '#6bd96b', opacity: 0.3, name: 'Tangent Plane'
+    });
+    data.push({
+      type: 'scatter3d', x: [x0], y: [y0], z: [f0],
+      mode: 'markers', marker: { size: 8, color: '#f97b4f' }
+    });
+  }
+
+  Plotly.react(divId, data, { ...PLOTLY_3D_BASE, ...opts.layout }, PLOTLY_CONFIG);
+}
+
+// ─── 2D SLICE PLOTS ────────────────────────────────────────────
+function plotSlice(divId, expr, fixVar, fixVal, varyRange, evalPt, color, xlabel) {
+  const pts = linspace(varyRange[0], varyRange[1], 100);
+  const ys = pts.map(v => {
+    const scope = fixVar === 'y' ? { x: v, y: fixVal } : { x: fixVal, y: v };
+    try { return math.evaluate(expr, scope); } catch { return null; }
+  });
+
+  const f0 = math.evaluate(expr,
+    fixVar === 'y' ? { x: evalPt, y: fixVal } : { x: fixVal, y: evalPt });
+  const dv = numericalPartial(expr, fixVar === 'y' ? 'x' : 'y', 
+    fixVar === 'y' ? evalPt : fixVal, 
+    fixVar === 'y' ? fixVal : evalPt);
+  const tLen = 1;
+  const tx = [evalPt - tLen, evalPt + tLen];
+  const ty = [f0 - dv * tLen, f0 + dv * tLen];
+
+  const traces = [
+    { x: pts, y: ys, type: 'scatter', mode: 'lines', line: { color, width: 2.5 }, name: 'f' },
+    { x: tx, y: ty, type: 'scatter', mode: 'lines', line: { color: '#f97b4f', width: 2, dash: 'dash' }, name: 'tangent' },
+    { x: [evalPt], y: [f0], type: 'scatter', mode: 'markers', marker: { size: 10, color: '#f97b4f' }, name: 'point' }
+  ];
+
+  const layout = {
+    ...PLOTLY_LAYOUT_BASE,
+    showlegend: false,
+    xaxis: { title: xlabel, gridcolor: '#2a2f42', zerolinecolor: '#3a3f52', color: '#8b90a0' },
+    yaxis: { title: 'f', gridcolor: '#2a2f42', zerolinecolor: '#3a3f52', color: '#8b90a0' },
+  };
+
+  Plotly.react(divId, traces, layout, PLOTLY_CONFIG);
+}
+
+// ─── MAIN PLOT FUNCTION ────────────────────────────────────────
+function plotAll() {
+  const expr = document.getElementById('funcInput').value.trim();
+  const x0 = parseFloat(document.getElementById('ptX').value) || 1;
+  const y0 = parseFloat(document.getElementById('ptY').value) || 1;
+  const errDiv = document.getElementById('funcError');
+
+  try {
+    math.evaluate(expr, { x: 1, y: 1 });
+    errDiv.style.display = 'none';
+  } catch {
+    errDiv.style.display = 'block';
+    return;
+  }
+
+  state.func = expr; state.x0 = x0; state.y0 = y0;
+  document.getElementById('label3d').textContent = expr;
+
+  plotSurface('plot3d', expr, x0, y0);
+  plotSlice('plotSliceX', expr, 'y', y0, [-3, 3], x0, '#4f9cf9', 'x');
+  plotSlice('plotSliceY', expr, 'x', x0, [-3, 3], y0, '#c97bf9', 'y');
+  plotSurface('plotDiff', expr, x0, y0);
+
+  const f0 = math.evaluate(expr, { x: x0, y: y0 });
+  const fx = numericalPartial(expr, 'x', x0, y0);
+  const fy = numericalPartial(expr, 'y', x0, y0);
+  document.getElementById('diffInfo').innerHTML =
+    `At (${x0}, ${y0}): f = <strong style="color:var(--accent1)">${f0.toFixed(3)}</strong> &nbsp;|&nbsp; 
+     ∂f/∂x = <strong style="color:var(--accent2)">${fx.toFixed(3)}</strong> &nbsp;|&nbsp; 
+     ∂f/∂y = <strong style="color:var(--accent4)">${fy.toFixed(3)}</strong> &nbsp;|&nbsp;
+     Tangent plane: df ≈ <strong style="color:var(--accent3)">${fx.toFixed(3)}</strong>·dx + <strong style="color:var(--accent3)">${fy.toFixed(3)}</strong>·dy`;
+}
+
+function setPreset(expr) {
+  document.getElementById('funcInput').value = expr;
+  plotAll();
+}
+
+// ─── ECONOMICS: UTILITY ────────────────────────────────────────
+function plotEconUtility() {
+  const a = state.utilAlpha, ux0 = state.ux0, uy0 = state.uy0;
+  const expr = (x, y) => Math.pow(Math.max(x, 0.001), a) * Math.pow(Math.max(y, 0.001), 1 - a);
+
+  const xs = linspace(0.1, 5, 40), ys = linspace(0.1, 5, 40);
+  const z = ys.map(y => xs.map(x => expr(x, y)));
+
+  Plotly.react('plotUtility3d', [{
+    type: 'surface', x: xs, y: ys, z,
+    colorscale: [[0,'#1f2435'],[0.5,'#4f9cf9'],[1,'#6bd96b']],
+    showscale: false, opacity: 0.9
+  }, {
+    type: 'scatter3d', x: [ux0], y: [uy0], z: [expr(ux0, uy0)],
+    mode: 'markers', marker: { size: 8, color: '#f97b4f' }
+  }], { ...PLOTLY_3D_BASE, scene: { ...PLOTLY_3D_BASE.scene, xaxis: { ...PLOTLY_3D_BASE.scene.xaxis, title: 'Good x' }, yaxis: { ...PLOTLY_3D_BASE.scene.yaxis, title: 'Good y' }, zaxis: { ...PLOTLY_3D_BASE.scene.zaxis, title: 'Utility' } } }, PLOTLY_CONFIG);
+
+  // MU_x slice
+  const xPts = linspace(0.1, 5, 80);
+  const uxVals = xPts.map(x => expr(x, uy0));
+  const mux0 = a * Math.pow(ux0, a - 1) * Math.pow(uy0, 1 - a);
+  const u0 = expr(ux0, uy0);
+  Plotly.react('plotUtilityMUx', [
+    { x: xPts, y: uxVals, type: 'scatter', mode: 'lines', line: { color: '#4f9cf9', width: 2.5 } },
+    { x: [ux0 - 1, ux0 + 1], y: [u0 - mux0, u0 + mux0], type: 'scatter', mode: 'lines', line: { color: '#f97b4f', dash: 'dash', width: 2 } },
+    { x: [ux0], y: [u0], type: 'scatter', mode: 'markers', marker: { size: 9, color: '#f97b4f' } }
+  ], { ...PLOTLY_LAYOUT_BASE, showlegend: false, xaxis: { title: 'x', gridcolor: '#2a2f42', color: '#8b90a0' }, yaxis: { title: 'U', gridcolor: '#2a2f42', color: '#8b90a0' } }, PLOTLY_CONFIG);
+
+  // MU_y slice
+  const yPts = linspace(0.1, 5, 80);
+  const uyVals = yPts.map(y => expr(ux0, y));
+  const muy0 = (1 - a) * Math.pow(ux0, a) * Math.pow(uy0, -a);
+  Plotly.react('plotUtilityMUy', [
+    { x: yPts, y: uyVals, type: 'scatter', mode: 'lines', line: { color: '#c97bf9', width: 2.5 } },
+    { x: [uy0 - 1, uy0 + 1], y: [u0 - muy0, u0 + muy0], type: 'scatter', mode: 'lines', line: { color: '#f97b4f', dash: 'dash', width: 2 } },
+    { x: [uy0], y: [u0], type: 'scatter', mode: 'markers', marker: { size: 9, color: '#f97b4f' } }
+  ], { ...PLOTLY_LAYOUT_BASE, showlegend: false, xaxis: { title: 'y', gridcolor: '#2a2f42', color: '#8b90a0' }, yaxis: { title: 'U', gridcolor: '#2a2f42', color: '#8b90a0' } }, PLOTLY_CONFIG);
+
+  // Interpretation
+  document.getElementById('utilityInterp').innerHTML =
+    `At (x=${ux0}, y=${uy0}): U = <strong>${expr(ux0, uy0).toFixed(3)}</strong><br>
+     Marginal utility of x = <strong>${mux0.toFixed(3)}</strong> — one more unit of good x increases utility by ~${mux0.toFixed(3)}<br>
+     Marginal utility of y = <strong>${muy0.toFixed(3)}</strong> — one more unit of good y increases utility by ~${muy0.toFixed(3)}<br>
+     MRS = MUx/MUy = <strong>${(mux0 / muy0).toFixed(3)}</strong> — the consumer would give up ${(mux0 / muy0).toFixed(2)} units of y to get one more unit of x`;
+}
+
+function updateAlpha(v) {
+  state.utilAlpha = parseFloat(v);
+  document.getElementById('alphaVal').textContent = v;
+  plotEconUtility();
+}
+function updateUPoint(axis, v) {
+  if (axis === 'x') { state.ux0 = parseFloat(v); document.getElementById('ux0Val').textContent = v; }
+  else { state.uy0 = parseFloat(v); document.getElementById('uy0Val').textContent = v; }
+  plotEconUtility();
+}
+
+// ─── ECONOMICS: PRODUCTION ─────────────────────────────────────
+function plotEconProduction() {
+  const a = state.prodAlpha, k0 = state.pk0, l0 = state.pl0;
+  const expr = (k, l) => Math.pow(Math.max(k, 0.001), a) * Math.pow(Math.max(l, 0.001), 1 - a);
+
+  const ks = linspace(0.1, 5, 40), ls = linspace(0.1, 5, 40);
+  const z = ls.map(l => ks.map(k => expr(k, l)));
+
+  Plotly.react('plotProd3d', [{
+    type: 'surface', x: ks, y: ls, z,
+    colorscale: [[0,'#1f2435'],[0.5,'#f9c74f'],[1,'#f97b4f']],
+    showscale: false, opacity: 0.9
+  }, {
+    type: 'scatter3d', x: [k0], y: [l0], z: [expr(k0, l0)],
+    mode: 'markers', marker: { size: 8, color: '#6bd96b' }
+  }], { ...PLOTLY_3D_BASE, scene: { ...PLOTLY_3D_BASE.scene, xaxis: { ...PLOTLY_3D_BASE.scene.xaxis, title: 'Capital K' }, yaxis: { ...PLOTLY_3D_BASE.scene.yaxis, title: 'Labour L' }, zaxis: { ...PLOTLY_3D_BASE.scene.zaxis, title: 'Output Q' } } }, PLOTLY_CONFIG);
+
+  const q0 = expr(k0, l0);
+  const mpk = a * Math.pow(k0, a - 1) * Math.pow(l0, 1 - a);
+  const mpl = (1 - a) * Math.pow(k0, a) * Math.pow(l0, -a);
+
+  // MPK slice
+  const kPts = linspace(0.1, 5, 80);
+  Plotly.react('plotProdMPK', [
+    { x: kPts, y: kPts.map(k => expr(k, l0)), type: 'scatter', mode: 'lines', line: { color: '#f9c74f', width: 2.5 } },
+    { x: [k0 - 1, k0 + 1], y: [q0 - mpk, q0 + mpk], type: 'scatter', mode: 'lines', line: { color: '#6bd96b', dash: 'dash', width: 2 } },
+    { x: [k0], y: [q0], type: 'scatter', mode: 'markers', marker: { size: 9, color: '#6bd96b' } }
+  ], { ...PLOTLY_LAYOUT_BASE, showlegend: false, xaxis: { title: 'K', gridcolor: '#2a2f42', color: '#8b90a0' }, yaxis: { title: 'Q', gridcolor: '#2a2f42', color: '#8b90a0' } }, PLOTLY_CONFIG);
+
+  // MPL slice
+  const lPts = linspace(0.1, 5, 80);
+  Plotly.react('plotProdMPL', [
+    { x: lPts, y: lPts.map(l => expr(k0, l)), type: 'scatter', mode: 'lines', line: { color: '#f97b4f', width: 2.5 } },
+    { x: [l0 - 1, l0 + 1], y: [q0 - mpl, q0 + mpl], type: 'scatter', mode: 'lines', line: { color: '#6bd96b', dash: 'dash', width: 2 } },
+    { x: [l0], y: [q0], type: 'scatter', mode: 'markers', marker: { size: 9, color: '#6bd96b' } }
+  ], { ...PLOTLY_LAYOUT_BASE, showlegend: false, xaxis: { title: 'L', gridcolor: '#2a2f42', color: '#8b90a0' }, yaxis: { title: 'Q', gridcolor: '#2a2f42', color: '#8b90a0' } }, PLOTLY_CONFIG);
+
+  document.getElementById('prodInterp').innerHTML =
+    `At (K=${k0}, L=${l0}): Q = <strong>${q0.toFixed(3)}</strong><br>
+     Marginal product of capital = <strong>${mpk.toFixed(3)}</strong> — one more unit of K adds ~${mpk.toFixed(3)} to output<br>
+     Marginal product of labour = <strong>${mpl.toFixed(3)}</strong> — one more unit of L adds ~${mpl.toFixed(3)} to output<br>
+     MRTS = MPK/MPL = <strong>${(mpk / mpl).toFixed(3)}</strong> — to keep output constant, ${(mpk/mpl).toFixed(2)} units of L must replace 1 unit of K`;
+}
+
+function updateProdAlpha(v) {
+  state.prodAlpha = parseFloat(v);
+  document.getElementById('prodAlphaVal').textContent = v;
+  plotEconProduction();
+}
+function updatePPoint(axis, v) {
+  if (axis === 'k') { state.pk0 = parseFloat(v); document.getElementById('pk0Val').textContent = v; }
+  else { state.pl0 = parseFloat(v); document.getElementById('pl0Val').textContent = v; }
+  plotEconProduction();
+}
+
+// ─── CONCEPT PLOTS ─────────────────────────────────────────────
+function plotConceptDerivative() {
+  const xs = linspace(-3, 3, 100);
+  const ys = xs.map(x => x * x);
+  const x0 = 1, f0 = 1, slope = 2;
+  Plotly.react('conceptDerivativePlot', [
+    { x: xs, y: ys, type: 'scatter', mode: 'lines', line: { color: '#4f9cf9', width: 2.5 }, name: 'f(x) = x²' },
+    { x: [x0 - 1.5, x0 + 1.5], y: [f0 - slope * 1.5, f0 + slope * 1.5], type: 'scatter', mode: 'lines', line: { color: '#f97b4f', dash: 'dash', width: 2 }, name: "tangent at x=1" },
+    { x: [x0], y: [f0], type: 'scatter', mode: 'markers', marker: { size: 10, color: '#f97b4f' }, name: 'point' }
+  ], { ...PLOTLY_LAYOUT_BASE, showlegend: true, legend: { font: { color: '#8b90a0' } }, xaxis: { title: 'x', gridcolor: '#2a2f42', color: '#8b90a0' }, yaxis: { title: 'f(x)', gridcolor: '#2a2f42', color: '#8b90a0' } }, PLOTLY_CONFIG);
+}
+
+function plotConceptPartial() {
+  const xs = linspace(-2, 2, 30), ys = linspace(-2, 2, 30);
+  const z = ys.map(y => xs.map(x => x * x + y * y));
+  Plotly.react('conceptPartialPlot', [{
+    type: 'surface', x: xs, y: ys, z,
+    colorscale: [[0,'#4f9cf9'],[0.5,'#c97bf9'],[1,'#f97b4f']],
+    showscale: false, opacity: 0.85
+  }], PLOTLY_3D_BASE, PLOTLY_CONFIG);
+}
+
+function plotConceptDiff() {
+  const xs = linspace(-2, 2, 30), ys = linspace(-2, 2, 30);
+  const z = ys.map(y => xs.map(x => x * x + y * y));
+  const x0 = 1, y0 = 1, f0 = 2, fx = 2, fy = 2;
+  const d = 1.5;
+  const txs = [x0-d,x0+d,x0+d,x0-d];
+  const tys = [y0-d,y0-d,y0+d,y0+d];
+  const tzs = txs.map((xi,i) => f0 + fx*(xi-x0) + fy*(tys[i]-y0));
+  Plotly.react('conceptDiffPlot', [
+    { type: 'surface', x: xs, y: ys, z, colorscale: [[0,'#4f9cf9'],[1,'#c97bf9']], showscale: false, opacity: 0.7 },
+    { type: 'mesh3d', x: txs, y: tys, z: tzs, i:[0,0],j:[1,2],k:[2,3], color:'#6bd96b', opacity: 0.4 },
+    { type: 'scatter3d', x:[x0],y:[y0],z:[f0], mode:'markers', marker:{size:8,color:'#f97b4f'} }
+  ], PLOTLY_3D_BASE, PLOTLY_CONFIG);
+}
+
+// ─── UI SWITCHING ──────────────────────────────────────────────
+function switchMode(mode) {
+  document.querySelectorAll('.mode-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('mode-' + mode).classList.add('active');
+  event.target.classList.add('active');
+
+  if (mode === 'economics') {
+    plotEconUtility();
+    plotEconProduction();
+  } else if (mode === 'concepts') {
+    plotConceptDerivative();
+    plotConceptPartial();
+    plotConceptDiff();
+  }
+}
+
+function switchEcon(type) {
+  document.querySelectorAll('.econ-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.econ-content').forEach(c => c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('econ-' + type).classList.add('active');
+}
+
+function showConcept(id) {
+  document.querySelectorAll('.concept-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.concept-detail').forEach(d => d.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('concept-' + id).classList.add('active');
+}
+
+// ─── INIT ──────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  plotAll();
+  plotConceptDerivative();
+  plotConceptPartial();
+  plotConceptDiff();
+});
+</script>
+</body>
+</html>
