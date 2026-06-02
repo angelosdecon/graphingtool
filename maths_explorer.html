@@ -625,6 +625,7 @@
   <div class="mode-tabs">
     <button class="mode-tab active" onclick="switchMode('explore', this)">Free Explore</button>
     <button class="mode-tab" onclick="switchMode('economics', this)">Economics</button>
+    <button class="mode-tab" onclick="switchMode('integration', this)">Integration</button>
     <button class="mode-tab" onclick="switchMode('concepts', this)">Learn</button>
   </div>
 </header>
@@ -633,39 +634,37 @@
 
   <!-- FREE EXPLORE -->
   <div id="mode-explore" class="mode-panel active">
-    <div class="explore-layout">
 
-      <div class="sidebar">
-        <h2>Enter a Function</h2>
-        <div class="input-group">
-          <label>Function f(x, y)</label>
-          <input type="text" id="funcInput" value="x^2 + y^2" placeholder="e.g. x^2 + y^2">
-          <div class="hint">Use x and y as variables. Operators: +, -, *, ^, sqrt(), sin(), cos(), exp()</div>
-          <div class="error-msg" id="funcError">Invalid expression — please check your input</div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <div class="input-group">
-            <label>x₀</label>
-            <input type="number" id="ptX" value="1" step="0.5">
-          </div>
-          <div class="input-group">
-            <label>y₀</label>
-            <input type="number" id="ptY" value="1" step="0.5">
-          </div>
-        </div>
-        <button class="btn-primary" onclick="plotAll()">Plot Function</button>
-
-        <span class="section-label">Quick Examples</span>
-        <div class="preset-buttons">
-          <button class="preset-btn" onclick="setPreset('x^2 + y^2')">Paraboloid: x² + y²</button>
-          <button class="preset-btn" onclick="setPreset('x^2 - y^2')">Saddle: x² − y²</button>
-          <button class="preset-btn" onclick="setPreset('sin(x) * cos(y)')">Waves: sin(x)·cos(y)</button>
+    <!-- Controls bar — full width, horizontal -->
+    <div style="background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:20px 24px; margin-bottom:24px; display:flex; align-items:flex-end; gap:20px; flex-wrap:wrap; box-shadow:var(--shadow);">
+      <div class="input-group" style="flex:2; min-width:200px; margin-bottom:0;">
+        <label>Function f(x, y)</label>
+        <input type="text" id="funcInput" value="x^2 + y^2" placeholder="e.g. x^2 + y^2">
+        <div class="hint">Use x and y as variables. Operators: +, -, *, ^, sqrt(), sin(), cos(), exp()</div>
+        <div class="error-msg" id="funcError">Invalid expression — please check your input</div>
+      </div>
+      <div class="input-group" style="width:100px; margin-bottom:0;">
+        <label>x₀</label>
+        <input type="number" id="ptX" value="1" step="0.5">
+      </div>
+      <div class="input-group" style="width:100px; margin-bottom:0;">
+        <label>y₀</label>
+        <input type="number" id="ptY" value="1" step="0.5">
+      </div>
+      <button class="btn-primary" onclick="plotAll()" style="width:140px; margin-bottom:0;">Plot Function</button>
+      <div style="flex:1; min-width:280px;">
+        <span class="section-label" style="margin-top:0;">Quick Examples</span>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;">
+          <button class="preset-btn" onclick="setPreset('x^2 + y^2')">Paraboloid</button>
+          <button class="preset-btn" onclick="setPreset('x^2 - y^2')">Saddle</button>
+          <button class="preset-btn" onclick="setPreset('sin(x) * cos(y)')">Waves</button>
           <button class="preset-btn" onclick="setPreset('exp(-(x^2+y^2)/4)')">Bell curve</button>
-          <button class="preset-btn" onclick="setPreset('x*y')">x · y</button>
+          <button class="preset-btn" onclick="setPreset('x*y')">x·y</button>
         </div>
       </div>
+    </div>
 
-      <div class="plots-area">
+    <div class="plots-area">
 
         <div class="plot-card">
           <div class="plot-card-header">
@@ -675,7 +674,7 @@
             <button onclick="resetView('plot3d')" class="btn-reset">↺ Reset View</button>
           </div>
           <div class="plot-container">
-            <div id="plot3d" style="height:460px;"></div>
+            <div id="plot3d" style="height:680px;"></div>
           </div>
           <div class="questions-panel">
             <h4>Think About It</h4>
@@ -790,7 +789,6 @@
           </div>
         </div>
 
-      </div>
     </div>
   </div>
 
@@ -1023,6 +1021,257 @@
     </div>
   </div>
 
+  <!-- INTEGRATION -->
+  <div id="mode-integration" class="mode-panel">
+
+    <!-- Sub-tabs -->
+    <div class="econ-tabs">
+      <div class="econ-tab active" onclick="switchInteg('free', this)">
+        <h3>Free Explorer</h3>
+        <p>Type any function and explore the area under the curve</p>
+        <div class="econ-formula">∫<sub>a</sub><sup>b</sup> f(x) dx</div>
+      </div>
+      <div class="econ-tab" onclick="switchInteg('surplus', this)">
+        <h3>Consumer Surplus</h3>
+        <p>Area between demand curve and market price</p>
+        <div class="econ-formula">CS = ∫<sub>0</sub><sup>Q*</sup> P(Q) dQ − P* · Q*</div>
+      </div>
+      <div class="econ-tab" onclick="switchInteg('cost', this)">
+        <h3>Total Cost from MC</h3>
+        <p>Integrating marginal cost to recover total cost</p>
+        <div class="econ-formula">TC(Q) = ∫<sub>0</sub><sup>Q</sup> MC(q) dq + FC</div>
+      </div>
+      <div class="econ-tab" onclick="switchInteg('revenue', this)">
+        <h3>Total Revenue</h3>
+        <p>Area under the demand curve up to quantity sold</p>
+        <div class="econ-formula">TR = ∫<sub>0</sub><sup>Q*</sup> P(Q) dQ</div>
+      </div>
+    </div>
+
+    <!-- FREE INTEGRATION EXPLORER -->
+    <div id="integ-free" class="econ-content active">
+      <div class="econ-layout">
+        <div class="econ-info">
+          <h3>Area Under a Curve</h3>
+          <p>The definite integral ∫<sub>a</sub><sup>b</sup> f(x) dx measures the signed area between the curve and the x-axis, from x = a to x = b.</p>
+          <div class="formula-box">∫<sub>a</sub><sup>b</sup> f(x) dx</div>
+          <p>Positive areas are above the x-axis; negative areas below.</p>
+
+          <div class="input-group" style="margin-top:16px;">
+            <label>Function f(x)</label>
+            <input type="text" id="integFunc" value="x^2" placeholder="e.g. x^2, sin(x), 3*x">
+            <div class="hint">Single variable x only</div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="param-slider">
+              <label>Lower limit a <span id="integAVal">0</span></label>
+              <input type="range" id="integA" min="-4" max="4" step="0.25" value="0" oninput="document.getElementById('integAVal').textContent=this.value; plotIntegFree();">
+            </div>
+            <div class="param-slider">
+              <label>Upper limit b <span id="integBVal">2</span></label>
+              <input type="range" id="integB" min="-4" max="4" step="0.25" value="2" oninput="document.getElementById('integBVal').textContent=this.value; plotIntegFree();">
+            </div>
+          </div>
+          <button class="btn-primary" onclick="plotIntegFree()" style="margin-top:8px;">Plot</button>
+
+          <div class="interpretation-box" style="margin-top:16px;">
+            <h5>Computed Area</h5>
+            <p id="integFreeResult">Press Plot to compute</p>
+          </div>
+
+          <div style="margin-top:20px;">
+            <span class="section-label">Quick Examples</span>
+            <div class="preset-buttons">
+              <button class="preset-btn" onclick="setIntegPreset('x^2', 0, 3)">x² from 0 to 3</button>
+              <button class="preset-btn" onclick="setIntegPreset('sin(x)', 0, 3.14159)">sin(x) from 0 to π</button>
+              <button class="preset-btn" onclick="setIntegPreset('2*x + 1', 0, 4)">2x + 1 from 0 to 4</button>
+              <button class="preset-btn" onclick="setIntegPreset('exp(-x)', 0, 3)">e^−x from 0 to 3</button>
+              <button class="preset-btn" onclick="setIntegPreset('x^3 - 3*x', -2, 2)">x³ − 3x from −2 to 2</button>
+            </div>
+          </div>
+
+          <div style="margin-top:20px;">
+            <div class="questions-panel" style="background:#fffbf5; border:1.5px solid #f0e8d5; border-radius:8px; padding:16px;">
+              <h4>Think About It</h4>
+              <div class="question-item">
+                <div class="q-number" style="background:var(--accent1)">1</div>
+                <p>Drag the upper limit b from 0 to 3. What happens to the shaded area as b increases?</p>
+              </div>
+              <div class="question-item">
+                <div class="q-number" style="background:var(--accent1)">2</div>
+                <p>Try x³ − 3x from −2 to 2. The area has positive and negative parts — what does the total tell you?</p>
+              </div>
+              <div class="question-item">
+                <div class="q-number" style="background:var(--accent1)">3</div>
+                <p>What is the relationship between the integral and the derivative? (Hint: Fundamental Theorem of Calculus)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#fff; border:1.5px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);">
+          <div id="plotIntegFree" style="height:520px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONSUMER SURPLUS -->
+    <div id="integ-surplus" class="econ-content">
+      <div class="econ-layout">
+        <div class="econ-info">
+          <h3>Consumer Surplus</h3>
+          <p>Consumer surplus is the benefit consumers receive when they pay less than their maximum willingness to pay. It is the area between the demand curve and the market price.</p>
+          <div class="formula-box">CS = ∫<sub>0</sub><sup>Q*</sup> P(Q) dQ − P* · Q*</div>
+          <p>Here P(Q) is the inverse demand curve, P* is the market price, and Q* is the equilibrium quantity.</p>
+
+          <div class="param-slider">
+            <label>Market Price P* <span id="csPrice">5</span></label>
+            <input type="range" min="1" max="15" step="0.5" value="5" oninput="document.getElementById('csPrice').textContent=this.value; plotConsumerSurplus(parseFloat(this.value));">
+          </div>
+
+          <div class="interpretation-box" style="margin-top:16px;">
+            <h5>Results</h5>
+            <p id="csResult">Move the slider to compute</p>
+          </div>
+
+          <div style="margin-top:20px;">
+            <div class="questions-panel" style="background:#fffbf5; border:1.5px solid #f0e8d5; border-radius:8px; padding:16px;">
+              <h4>Think About It</h4>
+              <div class="question-item">
+                <div class="q-number" style="background:var(--accent2)">1</div>
+                <p>Drag the price down. What happens to consumer surplus? Why?</p>
+              </div>
+              <div class="question-item">
+                <div class="q-number" style="background:var(--accent2)">2</div>
+                <p>At what price does consumer surplus equal zero? What does this mean?</p>
+              </div>
+              <div class="question-item">
+                <div class="q-number" style="background:var(--accent2)">3</div>
+                <p>If the government imposes a price floor above P*, what happens to consumer surplus?</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#fff; border:1.5px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);">
+          <div id="plotSurplus" style="height:520px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOTAL COST FROM MC -->
+    <div id="integ-cost" class="econ-content">
+      <div class="econ-layout">
+        <div class="econ-info">
+          <h3>Total Cost from Marginal Cost</h3>
+          <p>Marginal cost (MC) is the cost of producing one more unit. Integrating MC from 0 to Q gives total variable cost. Adding fixed cost gives total cost.</p>
+          <div class="formula-box">TC(Q) = FC + ∫<sub>0</sub><sup>Q</sup> MC(q) dq</div>
+          <p>We use MC(q) = a + b·q (a rising marginal cost curve — common in economics).</p>
+
+          <div class="param-slider">
+            <label>Fixed Cost FC <span id="fcVal">10</span></label>
+            <input type="range" min="0" max="50" step="5" value="10" oninput="document.getElementById('fcVal').textContent=this.value; plotTotalCost();">
+          </div>
+          <div class="param-slider">
+            <label>MC intercept a <span id="mcAVal">2</span></label>
+            <input type="range" min="0.5" max="8" step="0.5" value="2" oninput="document.getElementById('mcAVal').textContent=this.value; plotTotalCost();">
+          </div>
+          <div class="param-slider">
+            <label>MC slope b <span id="mcBVal">1</span></label>
+            <input type="range" min="0.1" max="3" step="0.1" value="1" oninput="document.getElementById('mcBVal').textContent=parseFloat(this.value).toFixed(1); plotTotalCost();">
+          </div>
+          <div class="param-slider">
+            <label>Quantity Q <span id="tcQVal">5</span></label>
+            <input type="range" min="1" max="10" step="0.5" value="5" oninput="document.getElementById('tcQVal').textContent=this.value; plotTotalCost();">
+          </div>
+
+          <div class="interpretation-box" style="margin-top:16px;">
+            <h5>Results at Q</h5>
+            <p id="tcResult">Move sliders to compute</p>
+          </div>
+
+          <div style="margin-top:20px;">
+            <div class="questions-panel" style="background:#fffbf5; border:1.5px solid #f0e8d5; border-radius:8px; padding:16px;">
+              <h4>Think About It</h4>
+              <div class="question-item">
+                <div class="q-number" style="background:var(--accent3)">1</div>
+                <p>Increase the MC slope b. How does the total cost curve change? What does this say about production?</p>
+              </div>
+              <div class="question-item">
+                <div class="q-number" style="background:var(--accent3)">2</div>
+                <p>The shaded area under MC equals total variable cost. What does the fixed cost FC represent geometrically?</p>
+              </div>
+              <div class="question-item">
+                <div class="q-number" style="background:var(--accent3)">3</div>
+                <p>If FC = 0, what does TC look like at Q = 0? What does this tell you about variable costs?</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <div style="background:#fff; border:1.5px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);">
+            <p style="font-size:0.88rem; font-weight:600; color:var(--text-dim); margin-bottom:10px;">Marginal Cost curve — shaded area = Total Variable Cost</p>
+            <div id="plotMC" style="height:260px;"></div>
+          </div>
+          <div style="background:#fff; border:1.5px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);">
+            <p style="font-size:0.88rem; font-weight:600; color:var(--text-dim); margin-bottom:10px;">Total Cost curve TC(Q) = FC + TVC</p>
+            <div id="plotTC" style="height:260px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOTAL REVENUE -->
+    <div id="integ-revenue" class="econ-content">
+      <div class="econ-layout">
+        <div class="econ-info">
+          <h3>Total Revenue</h3>
+          <p>Total revenue is the area under the demand curve from 0 to the quantity sold. We use a linear inverse demand curve P(Q) = A − b·Q.</p>
+          <div class="formula-box">TR = ∫<sub>0</sub><sup>Q*</sup> P(Q) dQ</div>
+          <p>Note: TR = P* × Q* (price times quantity). The integral gives the same result — and also reveals producer and consumer surplus visually.</p>
+
+          <div class="param-slider">
+            <label>Demand intercept A <span id="trAVal">20</span></label>
+            <input type="range" min="10" max="30" step="1" value="20" oninput="document.getElementById('trAVal').textContent=this.value; plotTotalRevenue();">
+          </div>
+          <div class="param-slider">
+            <label>Demand slope b <span id="trBVal">2</span></label>
+            <input type="range" min="0.5" max="5" step="0.5" value="2" oninput="document.getElementById('trBVal').textContent=this.value; plotTotalRevenue();">
+          </div>
+          <div class="param-slider">
+            <label>Quantity sold Q* <span id="trQVal">5</span></label>
+            <input type="range" min="1" max="9" step="0.5" value="5" oninput="document.getElementById('trQVal').textContent=this.value; plotTotalRevenue();">
+          </div>
+
+          <div class="interpretation-box" style="margin-top:16px;">
+            <h5>Results</h5>
+            <p id="trResult">Move sliders to compute</p>
+          </div>
+
+          <div style="margin-top:20px;">
+            <div class="questions-panel" style="background:#fffbf5; border:1.5px solid #f0e8d5; border-radius:8px; padding:16px;">
+              <h4>Think About It</h4>
+              <div class="question-item">
+                <div class="q-number" style="background:var(--accent4)">1</div>
+                <p>Increase Q*. Does total revenue always increase? Find the quantity where TR is maximised.</p>
+              </div>
+              <div class="question-item">
+                <div class="q-number" style="background:var(--accent4)">2</div>
+                <p>The blue area is TR (price × quantity). Can you see that this equals the rectangle P* × Q*?</p>
+              </div>
+              <div class="question-item">
+                <div class="q-number" style="background:var(--accent4)">3</div>
+                <p>What happens to TR as Q* approaches A/b (the maximum quantity consumers will buy at any positive price)?</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#fff; border:1.5px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);">
+          <div id="plotTR" style="height:520px;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
 </main>
 
 <script>
@@ -1047,12 +1296,13 @@ const LIGHT_3D = {
   paper_bgcolor: '#ffffff',
   scene: {
     bgcolor: '#ffffff',
+    aspectmode: 'cube',
     xaxis: { gridcolor: '#dddddd', zerolinecolor: '#cccccc', color: '#555555', tickfont: { size: 11 } },
     yaxis: { gridcolor: '#dddddd', zerolinecolor: '#cccccc', color: '#555555', tickfont: { size: 11 } },
     zaxis: { gridcolor: '#dddddd', zerolinecolor: '#cccccc', color: '#555555', tickfont: { size: 11 } },
   },
   font: { color: '#333333', family: 'Source Sans 3, sans-serif', size: 12 },
-  margin: { t: 20, b: 20, l: 20, r: 20 },
+  margin: { t: 0, b: 0, l: 0, r: 0, pad: 0 },
 };
 
 const CFG = { displayModeBar: false, responsive: true };
@@ -1393,6 +1643,236 @@ function plotConceptDiff(){
   ],LIGHT_3D,CFG);
 }
 
+// ─── NUMERICAL INTEGRATION (Simpson's rule) ───────────────────
+function numericalIntegral(f, a, b, n = 500) {
+  if (a >= b) return 0;
+  const h = (b - a) / n;
+  let sum = f(a) + f(b);
+  for (let i = 1; i < n; i++) {
+    sum += (i % 2 === 0 ? 2 : 4) * f(a + i * h);
+  }
+  return (h / 3) * sum;
+}
+
+// ─── FREE INTEGRATION EXPLORER ────────────────────────────────
+function plotIntegFree() {
+  const exprRaw = document.getElementById('integFunc').value.trim();
+  const a = parseFloat(document.getElementById('integA').value);
+  const b = parseFloat(document.getElementById('integB').value);
+
+  let f;
+  try { math.evaluate(exprRaw, { x: 1 }); f = x => math.evaluate(exprRaw, { x }); }
+  catch { document.getElementById('integFreeResult').textContent = 'Invalid function'; return; }
+
+  const xs = linspace(-4.5, 4.5, 200);
+  const ys = xs.map(x => { try { return f(x); } catch { return null; } });
+
+  // Shaded fill between a and b
+  const fillX = linspace(Math.min(a,b), Math.max(a,b), 150);
+  const fillY = fillX.map(x => { try { return f(x); } catch { return 0; } });
+  const fillXFull = [...fillX, ...fillX.slice().reverse()];
+  const fillYFull = [...fillY, ...fillY.map(() => 0)];
+
+  const area = numericalIntegral(f, Math.min(a,b), Math.max(a,b));
+
+  Plotly.react('plotIntegFree', [
+    // shaded area
+    { x: fillXFull, y: fillYFull, type: 'scatter', mode: 'lines', fill: 'toself',
+      fillcolor: 'rgba(45,107,228,0.15)', line: { color: '#2d6be4', width: 1 }, name: 'Area' },
+    // main curve
+    { x: xs, y: ys, type: 'scatter', mode: 'lines', line: { color: '#2d6be4', width: 3.5 }, name: `f(x) = ${exprRaw}` },
+    // limit markers
+    { x: [a, a], y: [0, f(a)], type: 'scatter', mode: 'lines', line: { color: '#e05c2d', width: 2, dash: 'dash' }, name: `a = ${a}` },
+    { x: [b, b], y: [0, f(b)], type: 'scatter', mode: 'lines', line: { color: '#27a35a', width: 2, dash: 'dash' }, name: `b = ${b}` }
+  ], {
+    ...LIGHT_LAYOUT,
+    showlegend: true,
+    legend: { font: { size: 12 } },
+    xaxis: { ...LIGHT_LAYOUT.xaxis, title: { text: 'x', font: { size: 13 } }, zeroline: true, zerolinewidth: 2 },
+    yaxis: { ...LIGHT_LAYOUT.yaxis, title: { text: 'f(x)', font: { size: 13 } }, zeroline: true, zerolinewidth: 2 },
+    annotations: [{
+      x: (a + b) / 2, y: Math.max(...fillY) / 2,
+      text: `Area = ${area.toFixed(4)}`,
+      showarrow: false, font: { size: 14, color: '#2d6be4', bold: true },
+      bgcolor: 'rgba(255,255,255,0.8)', bordercolor: '#2d6be4', borderwidth: 1
+    }]
+  }, CFG);
+
+  document.getElementById('integFreeResult').innerHTML =
+    `∫<sub>${a}</sub><sup>${b}</sup> f(x) dx = <strong style="color:#2d6be4; font-size:1.2rem;">${area.toFixed(6)}</strong>`;
+}
+
+function setIntegPreset(expr, a, b) {
+  document.getElementById('integFunc').value = expr;
+  document.getElementById('integA').value = a;
+  document.getElementById('integAVal').textContent = a;
+  document.getElementById('integB').value = b;
+  document.getElementById('integBVal').textContent = b;
+  plotIntegFree();
+}
+
+// ─── CONSUMER SURPLUS ─────────────────────────────────────────
+function plotConsumerSurplus(price) {
+  price = price || parseFloat(document.getElementById('csPrice')?.value) || 5;
+  // Demand: P(Q) = 20 - 2Q  =>  Q = (20 - P) / 2
+  const A = 20, b = 2;
+  const Qstar = Math.max(0, (A - price) / b);
+  const demand = Q => A - b * Q;
+  const Qmax = A / b;
+
+  const xs = linspace(0, Qmax + 0.5, 200);
+  const ys = xs.map(demand);
+
+  const csArea = numericalIntegral(demand, 0, Qstar) - price * Qstar;
+  const tr = price * Qstar;
+
+  // CS fill (above price, under demand)
+  const csX = linspace(0, Qstar, 100);
+  const csY = csX.map(demand);
+  const csFillX = [...csX, Qstar, 0];
+  const csFillY = [...csY, price, price];
+
+  // TR fill (price * quantity rectangle)
+  const trFillX = [0, Qstar, Qstar, 0];
+  const trFillY = [price, price, 0, 0];
+
+  Plotly.react('plotSurplus', [
+    { x: csFillX, y: csFillY, type: 'scatter', mode: 'lines', fill: 'toself',
+      fillcolor: 'rgba(45,107,228,0.2)', line: { color: '#2d6be4', width: 0 }, name: 'Consumer Surplus' },
+    { x: trFillX, y: trFillY, type: 'scatter', mode: 'lines', fill: 'toself',
+      fillcolor: 'rgba(39,163,90,0.15)', line: { color: '#27a35a', width: 0 }, name: 'Total Revenue' },
+    { x: xs, y: ys, type: 'scatter', mode: 'lines', line: { color: '#e05c2d', width: 3.5 }, name: 'Demand: P = 20 − 2Q' },
+    { x: [0, Qmax + 0.5], y: [price, price], type: 'scatter', mode: 'lines',
+      line: { color: '#8e3dc9', width: 2.5, dash: 'dash' }, name: `Market Price P* = ${price}` },
+    { x: [Qstar, Qstar], y: [0, price], type: 'scatter', mode: 'lines',
+      line: { color: '#555', width: 1.5, dash: 'dot' }, name: `Q* = ${Qstar.toFixed(2)}` },
+    { x: [Qstar], y: [price], type: 'scatter', mode: 'markers',
+      marker: { size: 12, color: '#8e3dc9', line: { color: '#fff', width: 2 } }, name: 'Equilibrium' }
+  ], {
+    ...LIGHT_LAYOUT,
+    showlegend: true,
+    legend: { font: { size: 12 } },
+    xaxis: { ...LIGHT_LAYOUT.xaxis, title: { text: 'Quantity Q', font: { size: 13 } }, range: [0, Qmax + 0.5] },
+    yaxis: { ...LIGHT_LAYOUT.yaxis, title: { text: 'Price P', font: { size: 13 } }, range: [0, A + 1] }
+  }, CFG);
+
+  document.getElementById('csResult').innerHTML =
+    `Q* = <strong>${Qstar.toFixed(2)}</strong> &nbsp;|&nbsp;
+     P* = <strong>${price}</strong><br>
+     Consumer Surplus = <strong style="color:#2d6be4">${csArea.toFixed(2)}</strong><br>
+     Total Revenue = <strong style="color:#27a35a">${tr.toFixed(2)}</strong>`;
+}
+
+// ─── TOTAL COST FROM MC ───────────────────────────────────────
+function plotTotalCost() {
+  const FC = parseFloat(document.getElementById('fcVal').value) || 10;
+  const a  = parseFloat(document.getElementById('mcAVal').value) || 2;
+  const b  = parseFloat(document.getElementById('mcBVal').value) || 1;
+  const Q  = parseFloat(document.getElementById('tcQVal').value) || 5;
+
+  const mc = q => a + b * q;
+  const tc = q => FC + a * q + 0.5 * b * q * q;
+
+  const qs = linspace(0, 11, 150);
+  const mcVals = qs.map(mc);
+  const tcVals = qs.map(tc);
+
+  // Shaded area under MC up to Q
+  const fillQs = linspace(0, Q, 100);
+  const fillMC = fillQs.map(mc);
+  const fillX = [...fillQs, Q, 0];
+  const fillY = [...fillMC, 0, 0];
+
+  const tvc = numericalIntegral(mc, 0, Q);
+
+  Plotly.react('plotMC', [
+    { x: fillX, y: fillY, type: 'scatter', mode: 'lines', fill: 'toself',
+      fillcolor: 'rgba(39,163,90,0.15)', line: { color: '#27a35a', width: 0 }, name: 'TVC = area' },
+    { x: qs, y: mcVals, type: 'scatter', mode: 'lines', line: { color: '#27a35a', width: 3.5 }, name: `MC = ${a} + ${b}q` },
+    { x: [Q, Q], y: [0, mc(Q)], type: 'scatter', mode: 'lines',
+      line: { color: '#e05c2d', width: 2, dash: 'dash' }, name: `Q = ${Q}` },
+    { x: [Q], y: [mc(Q)], type: 'scatter', mode: 'markers',
+      marker: { size: 12, color: '#e05c2d', line: { color: '#fff', width: 2 } }, showlegend: false }
+  ], {
+    ...LIGHT_LAYOUT, showlegend: true, legend: { font: { size: 12 } },
+    xaxis: { ...LIGHT_LAYOUT.xaxis, title: { text: 'Quantity Q', font: { size: 13 } }, range: [0, 11] },
+    yaxis: { ...LIGHT_LAYOUT.yaxis, title: { text: 'MC', font: { size: 13 } } }
+  }, CFG);
+
+  Plotly.react('plotTC', [
+    { x: qs, y: tcVals, type: 'scatter', mode: 'lines', line: { color: '#2d6be4', width: 3.5 }, name: 'TC = FC + TVC' },
+    { x: qs, y: qs.map(q => FC), type: 'scatter', mode: 'lines',
+      line: { color: '#8e3dc9', width: 2, dash: 'dot' }, name: `FC = ${FC}` },
+    { x: [Q], y: [tc(Q)], type: 'scatter', mode: 'markers',
+      marker: { size: 12, color: '#e05c2d', line: { color: '#fff', width: 2 } }, name: `TC(${Q}) = ${tc(Q).toFixed(2)}` }
+  ], {
+    ...LIGHT_LAYOUT, showlegend: true, legend: { font: { size: 12 } },
+    xaxis: { ...LIGHT_LAYOUT.xaxis, title: { text: 'Quantity Q', font: { size: 13 } }, range: [0, 11] },
+    yaxis: { ...LIGHT_LAYOUT.yaxis, title: { text: 'Total Cost', font: { size: 13 } } }
+  }, CFG);
+
+  document.getElementById('tcResult').innerHTML =
+    `At Q = ${Q}:<br>
+     TVC = ∫MC = <strong style="color:#27a35a">${tvc.toFixed(2)}</strong><br>
+     FC = <strong style="color:#8e3dc9">${FC}</strong><br>
+     TC = FC + TVC = <strong style="color:#2d6be4">${tc(Q).toFixed(2)}</strong><br>
+     MC at Q = <strong>${mc(Q).toFixed(2)}</strong>`;
+}
+
+// ─── TOTAL REVENUE ────────────────────────────────────────────
+function plotTotalRevenue() {
+  const A  = parseFloat(document.getElementById('trAVal').value) || 20;
+  const b  = parseFloat(document.getElementById('trBVal').value) || 2;
+  const Qs = parseFloat(document.getElementById('trQVal').value) || 5;
+
+  const demand = Q => Math.max(0, A - b * Q);
+  const Pstar = demand(Qs);
+  const Qmax = A / b;
+  const TR = Pstar * Qs;
+
+  const xs = linspace(0, Qmax, 200);
+  const ys = xs.map(demand);
+
+  // TR rectangle fill
+  const trFillX = [0, Qs, Qs, 0];
+  const trFillY = [Pstar, Pstar, 0, 0];
+
+  Plotly.react('plotTR', [
+    { x: trFillX, y: trFillY, type: 'scatter', mode: 'lines', fill: 'toself',
+      fillcolor: 'rgba(45,107,228,0.2)', line: { color: '#2d6be4', width: 0 }, name: `TR = P*×Q* = ${TR.toFixed(2)}` },
+    { x: xs, y: ys, type: 'scatter', mode: 'lines', line: { color: '#e05c2d', width: 3.5 }, name: `Demand: P = ${A} − ${b}Q` },
+    { x: [0, Qmax], y: [Pstar, Pstar], type: 'scatter', mode: 'lines',
+      line: { color: '#8e3dc9', width: 2, dash: 'dash' }, name: `P* = ${Pstar.toFixed(2)}` },
+    { x: [Qs, Qs], y: [0, Pstar], type: 'scatter', mode: 'lines',
+      line: { color: '#555', width: 1.5, dash: 'dot' }, name: `Q* = ${Qs}` },
+    { x: [Qs], y: [Pstar], type: 'scatter', mode: 'markers',
+      marker: { size: 13, color: '#8e3dc9', line: { color: '#fff', width: 2 } }, name: 'Equilibrium' }
+  ], {
+    ...LIGHT_LAYOUT,
+    showlegend: true,
+    legend: { font: { size: 12 } },
+    xaxis: { ...LIGHT_LAYOUT.xaxis, title: { text: 'Quantity Q', font: { size: 13 } }, range: [0, Qmax + 0.5] },
+    yaxis: { ...LIGHT_LAYOUT.yaxis, title: { text: 'Price P', font: { size: 13 } }, range: [0, A + 1] }
+  }, CFG);
+
+  document.getElementById('trResult').innerHTML =
+    `Q* = <strong>${Qs}</strong> &nbsp;|&nbsp; P* = <strong>${Pstar.toFixed(2)}</strong><br>
+     TR = P* × Q* = <strong style="color:#2d6be4; font-size:1.1rem;">${TR.toFixed(2)}</strong><br>
+     Max Q at P=0: <strong>${Qmax.toFixed(2)}</strong>`;
+}
+
+// ─── INTEGRATION SUB-TABS ─────────────────────────────────────
+function switchInteg(type, el) {
+  document.querySelectorAll('#mode-integration .econ-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#mode-integration .econ-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('integ-' + type).classList.add('active');
+  if (type === 'free') plotIntegFree();
+  else if (type === 'surplus') plotConsumerSurplus();
+  else if (type === 'cost') plotTotalCost();
+  else if (type === 'revenue') plotTotalRevenue();
+}
+
 // ─── UI SWITCHES ───────────────────────────────────────────────
 function switchMode(mode, btn){
   document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
@@ -1401,6 +1881,7 @@ function switchMode(mode, btn){
   btn.classList.add('active');
   if(mode==='economics'){plotEconUtility();plotEconProduction();}
   else if(mode==='concepts'){plotConceptDerivative();plotConceptPartial();plotConceptDiff();}
+  else if(mode==='integration'){plotIntegFree();plotConsumerSurplus();plotTotalCost();plotTotalRevenue();}
 }
 
 function switchEcon(type,el){
