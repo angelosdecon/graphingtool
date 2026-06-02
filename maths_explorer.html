@@ -1168,19 +1168,19 @@
 
           <div class="param-slider">
             <label>Fixed Cost FC <span id="fcVal">10</span></label>
-            <input type="range" min="0" max="50" step="5" value="10" oninput="document.getElementById('fcVal').textContent=this.value; plotTotalCost();">
+            <input type="range" id="fcSlider" min="0" max="50" step="5" value="10" oninput="document.getElementById('fcVal').textContent=this.value; plotTotalCost();">
           </div>
           <div class="param-slider">
             <label>MC intercept a <span id="mcAVal">2</span></label>
-            <input type="range" min="0.5" max="8" step="0.5" value="2" oninput="document.getElementById('mcAVal').textContent=this.value; plotTotalCost();">
+            <input type="range" id="mcASlider" min="0.5" max="8" step="0.5" value="2" oninput="document.getElementById('mcAVal').textContent=this.value; plotTotalCost();">
           </div>
           <div class="param-slider">
             <label>MC slope b <span id="mcBVal">1</span></label>
-            <input type="range" min="0.1" max="3" step="0.1" value="1" oninput="document.getElementById('mcBVal').textContent=parseFloat(this.value).toFixed(1); plotTotalCost();">
+            <input type="range" id="mcBSlider" min="0.1" max="3" step="0.1" value="1" oninput="document.getElementById('mcBVal').textContent=parseFloat(this.value).toFixed(1); plotTotalCost();">
           </div>
           <div class="param-slider">
             <label>Quantity Q <span id="tcQVal">5</span></label>
-            <input type="range" min="1" max="10" step="0.5" value="5" oninput="document.getElementById('tcQVal').textContent=this.value; plotTotalCost();">
+            <input type="range" id="tcQSlider" min="1" max="10" step="0.5" value="5" oninput="document.getElementById('tcQVal').textContent=this.value; plotTotalCost();">
           </div>
 
           <div class="interpretation-box" style="margin-top:16px;">
@@ -1230,15 +1230,15 @@
 
           <div class="param-slider">
             <label>Demand intercept A <span id="trAVal">20</span></label>
-            <input type="range" min="10" max="30" step="1" value="20" oninput="document.getElementById('trAVal').textContent=this.value; plotTotalRevenue();">
+            <input type="range" id="trASlider" min="10" max="30" step="1" value="20" oninput="document.getElementById('trAVal').textContent=this.value; plotTotalRevenue();">
           </div>
           <div class="param-slider">
             <label>Demand slope b <span id="trBVal">2</span></label>
-            <input type="range" min="0.5" max="5" step="0.5" value="2" oninput="document.getElementById('trBVal').textContent=this.value; plotTotalRevenue();">
+            <input type="range" id="trBSlider" min="0.5" max="5" step="0.5" value="2" oninput="document.getElementById('trBVal').textContent=this.value; plotTotalRevenue();">
           </div>
           <div class="param-slider">
             <label>Quantity sold Q* <span id="trQVal">5</span></label>
-            <input type="range" min="1" max="9" step="0.5" value="5" oninput="document.getElementById('trQVal').textContent=this.value; plotTotalRevenue();">
+            <input type="range" id="trQSlider" min="1" max="9" step="0.5" value="5" oninput="document.getElementById('trQVal').textContent=this.value; plotTotalRevenue();">
           </div>
 
           <div class="interpretation-box" style="margin-top:16px;">
@@ -1765,10 +1765,10 @@ function plotConsumerSurplus(price) {
 
 // ─── TOTAL COST FROM MC ───────────────────────────────────────
 function plotTotalCost() {
-  const FC = parseFloat(document.getElementById('fcVal').value) || 10;
-  const a  = parseFloat(document.getElementById('mcAVal').value) || 2;
-  const b  = parseFloat(document.getElementById('mcBVal').value) || 1;
-  const Q  = parseFloat(document.getElementById('tcQVal').value) || 5;
+  const FC = parseFloat(document.getElementById('fcSlider').value) || 10;
+  const a  = parseFloat(document.getElementById('mcASlider').value) || 2;
+  const b  = parseFloat(document.getElementById('mcBSlider').value) || 1;
+  const Q  = parseFloat(document.getElementById('tcQSlider').value) || 5;
 
   const mc = q => a + b * q;
   const tc = q => FC + a * q + 0.5 * b * q * q;
@@ -1821,9 +1821,9 @@ function plotTotalCost() {
 
 // ─── TOTAL REVENUE ────────────────────────────────────────────
 function plotTotalRevenue() {
-  const A  = parseFloat(document.getElementById('trAVal').value) || 20;
-  const b  = parseFloat(document.getElementById('trBVal').value) || 2;
-  const Qs = parseFloat(document.getElementById('trQVal').value) || 5;
+  const A  = parseFloat(document.getElementById('trASlider').value) || 20;
+  const b  = parseFloat(document.getElementById('trBSlider').value) || 2;
+  const Qs = parseFloat(document.getElementById('trQSlider').value) || 5;
 
   const demand = Q => Math.max(0, A - b * Q);
   const Pstar = demand(Qs);
